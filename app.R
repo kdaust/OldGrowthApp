@@ -5,7 +5,10 @@ library(data.table)
 library(htmltools)
 library(htmlwidgets)
 library(rhandsontable)
+library(shinyalert)
 source("./OGSource.R")
+
+mbtk <- "pk.eyJ1Ijoia2lyaWRhdXN0IiwiYSI6ImNraDJjOTNxNzBucm0ycWxxbTlrOHY5OTEifQ.GybbrNS0kJ3VZ_lGCpXwMA"
 
 defer_server <- "http://142.93.148.116/data/Defer/{z}/{x}/{y}.pbf"
 defer_layer <- "Defer"
@@ -24,14 +27,16 @@ colCB <- data.table(ID = c(1,2,3),Col = c("#59341d","#a14c18","#e0996e"))
 load("Defer_Info.Rdata")
 dat[,Area := as.numeric(Area)]
 
+deferDat<- fread("./DeferByBGC.csv")
+forestDat <- fread("./ForestByBGC.csv")
+
 ui <- fluidPage(
-  fluidRow(column(2
-                  ),
-           column(10,
-                  rHandsontableOutput("defer_info"),
-                  leafletjs_defer,
-                  leafletOutput("map", height = "95vh")
-                  )
+  titlePanel("Forest Vision"),
+  h3("The P(rice)H(olt)D(aust) Portal"),
+  fluidRow(
+              useShinyalert(),
+              leafletjs_defer,
+              leafletOutput("map", height = "95vh")
            )
   
 )
@@ -47,6 +52,9 @@ server <- function(input, output) {
                                   options = leaflet::pathOptions(pane = "mapPane")) %>%
         addPlugin() %>%
         addBGCTiles() %>%
+        addTiles(urlTemplate = paste0(
+          "https://studio.mapbox.com/tilesets/kiridaust.2lqlrul6/{z}/{x}/{y}"),
+          group = "Seral") %>% 
         invokeMethod(data = colDefer, method = "addOGTiles", 
                      ~ID, ~Col, defer_server, defer_layer,1) %>%
         invokeMethod(data = colRare, method = "addOGTiles", 
@@ -57,14 +65,8 @@ server <- function(input, output) {
                      ~ID, ~Col, cb_server, cb_layer,0.5) %>%
         leaflet::addLayersControl(
           baseGroups = c("Positron","Satellite", "OpenStreetMap","BGCs"),
-          overlayGroups = c("Defer","Rare","Ancient","Cutblocks"),
+          overlayGroups = c("Defer","Rare","Ancient","Cutblocks","Seral"),
           position = "topright")
-    })
-    
-    observeEvent(input$defer_click,{
-      output$clkID <- renderText({
-        input$defer_click
-      })
     })
     
     observeEvent(input$defer_click,{
@@ -75,6 +77,51 @@ server <- function(input, output) {
         })
       }
     })
+    
+    getBGCdat <- reactive({
+      dat <- deferDat[BGC == input$bgc_click,.(SIClass,Area,Var)]
+      dat <- dcast(dat, Var ~ SIClass, value.var = "Area")
+      dat2 <- forestDat[BGC == input$bgc_click,.(SIClass,Area,Var)]
+      dat2 <- dcast(dat2, Var ~ SIClass, value.var = "Area")
+      return(list(defer = dat, forest = dat2))
+    })
+    
+    output$hot_defer <- renderRHandsontable({
+      dat <- getBGCdat()$defer
+      rhandsontable(dat)
+    })
+    
+    output$hot_forest <- renderRHandsontable({
+      dat <- getBGCdat()$forest
+      rhandsontable(dat)
+    })
+    
+    observeEvent(input$bgc_click,{
+      shinyalert(html = T,
+                 text = tagList(
+                   h3(paste0("Summary by BGC - ",input$bgc_click)),
+                   hr(),
+                   h4("Forest"),
+                   rHandsontableOutput("hot_forest"),
+                   hr(),
+                   h4("Defer"),
+                   rHandsontableOutput("hot_defer")
+                   )
+                   
+                 )
+    })
+    
+    observeEvent(input$defer_click,{
+      shinyalert(html = T,
+                 text = tagList(
+                   h3("Summary of Productive Polygon"),
+                   hr(),
+                   rHandsontableOutput("defer_info")
+                 )
+                 
+      )
+    })
+    
 }
 
 # Run the application 

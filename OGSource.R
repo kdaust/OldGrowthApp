@@ -132,31 +132,44 @@ addBGCTiles <- function(map) {
       
       var subzLayer = L.vectorGrid.protobuf(
         "', bgc_tileserver, '",
-        vectorTileOptions("bec_map", "', bgc_tilelayer, '", false,
+        vectorTileOptions("bec_map", "', bgc_tilelayer, '", true,
                           "tilePane", subzoneColors, "MAP_LABEL", "MAP_LABEL")
       )
       this.layerManager.addLayer(subzLayer, "tile", "bec_map", "BGCs");
+     subzLayer.on("click", function(e){
+      Shiny.setInputValue("bgc_click",e.layer.properties.MAP_LABEL);
+     });
+     
+     var selectHighlight = "SBSdk";
+      subzLayer.on("click", function(e){
+        console.log(e.layer);
+        subzLayer.resetFeatureStyle(selectHighlight);
+        Shiny.setInputValue("bgc_click",e.layer.properties.MAP_LABEL);
+        var properties = e.layer.properties
+  			  highlight = properties.MAP_LABEL
+  			  var style = {
+            weight: 1,
+            color: "#fc036f",
+            fillColor: subzoneColors[properties.MAP_LABEL],
+            fillOpacity: 1,
+            fill: true
+          }
+          subzLayer.setFeatureStyle(properties.MAP_LABEL, style);
+      });
       
-      updateOpacity = function(value) {
-        L.bec_layer_opacity = parseFloat(value);
-      }
       
-      var opacityslider = L.control.slider(updateOpacity, {
-        id:"opacity_slider",
-        orientation:"horizontal",
-        position:"bottomleft",
-        logo:\'<img src="opacity.svg" />\',
-        max:1,
-        title: "BGC Opacity",
-        step:0.01,
-        syncSlider:true,
-        size:"250px",
-        // Starting opacity value for bec map layers
-        value:0.25,
-        showValue:true
+      var highlight
+		  var clearHighlight = function() {
+		  	if (highlight) {
+		  		subzLayer.resetFeatureStyle(highlight);
+		  	}
+		  	highlight = null;
+		  }
+		  
+      subzLayer.on("mouseout", function(e) {
+        clearHighlight();
       })
-      
-      opacityslider.addTo(this)
+     
     }'
   ))
   map
