@@ -34,8 +34,20 @@
     }
   },
   "data": {
-    "tiles": {
-      "mbtiles": "tiles.mbtiles"
+    "Ancient": {
+      "mbtiles": "ancient.mbtiles"
+    },
+    "Cutblocks": {
+      "mbtiles": "cutblocks.mbtiles"
+    },
+    "Rare": {
+      "mbtiles": "rare.mbtiles"
+    },
+    "Defer": {
+      "mbtiles": "tiles2.mbtiles"
+    },
+    "RastTest": {
+      "mbtiles": "test.mbtiles"
     }
   }
 }
