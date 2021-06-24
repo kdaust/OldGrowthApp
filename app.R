@@ -52,9 +52,8 @@ server <- function(input, output) {
                                   options = leaflet::pathOptions(pane = "mapPane")) %>%
         addPlugin() %>%
         addBGCTiles() %>%
-        addTiles(urlTemplate = paste0(
-          "https://studio.mapbox.com/tilesets/kiridaust.2lqlrul6/{z}/{x}/{y}"),
-          group = "Seral") %>% 
+        addTiles(urlTemplate = "http://142.93.148.116/data/cSI/{z}/{x}/{y}.png",
+                 group = "Seral") %>% 
         invokeMethod(data = colDefer, method = "addOGTiles", 
                      ~ID, ~Col, defer_server, defer_layer,1) %>%
         invokeMethod(data = colRare, method = "addOGTiles", 
@@ -65,7 +64,7 @@ server <- function(input, output) {
                      ~ID, ~Col, cb_server, cb_layer,0.5) %>%
         leaflet::addLayersControl(
           baseGroups = c("Positron","Satellite", "OpenStreetMap","BGCs"),
-          overlayGroups = c("Defer","Rare","Ancient","Cutblocks","Seral"),
+          overlayGroups = c("Seral","Defer","Rare","Ancient","Cutblocks"),
           position = "topright")
     })
     

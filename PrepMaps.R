@@ -4,6 +4,27 @@ library(stars)
 library(raster)
 library(fasterize)
 
+
+rast <- raster("./RasterData/cSI.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c("#a86507ff","#e5ed00ff","#99ff00ff","#67d916ff",
+          "#4a9911ff","#295708ff","#193605ff")
+temp <- RGB(rast,filename = "cSI_RGB.tif", col = cols,breaks = 1:8, 
+            alpha = T, overwrite = T)
+temp$cSI_RGB.4[temp$cSI_RGB.1 == 255] <- 0
+writeRaster(temp,"cSI_RGBA.tif", overwrite = T)
+
+rast <- raster("./RasterData/Disturbance.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c("#a86507ff","#e5ed00ff","#99ff00ff","#67d916ff",
+          "#4a9911ff","#295708ff","#193605ff")
+temp <- RGB(rast,filename = "cSI_RGB.tif", col = cols,breaks = 1:8, 
+            alpha = T, overwrite = T)
+temp$cSI_RGB.4[temp$cSI_RGB.1 == 255] <- 0
+writeRaster(temp,"cSI_RGBA.tif", overwrite = T)
+
 rast <- raster("Raster_Template.tif")
 vect <- st_read(dsn = "./OG_ShapeFiles/Defer")
 vect <- st_transform(vect, st_crs(rast))
