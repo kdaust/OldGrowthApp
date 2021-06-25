@@ -53,7 +53,13 @@ server <- function(input, output) {
         addPlugin() %>%
         addBGCTiles() %>%
         addTiles(urlTemplate = "http://142.93.148.116/data/cSI/{z}/{x}/{y}.png",
-                 group = "Seral") %>% 
+                 group = "SiteIndex") %>% 
+        addTiles(urlTemplate = "http://142.93.148.116/data/Disturb/{z}/{x}/{y}.png",
+                 group = "Disturbance") %>% 
+        addTiles(urlTemplate = "http://142.93.148.116/data/Protected/{z}/{x}/{y}.png",
+                 group = "Protected") %>% 
+        addTiles(urlTemplate = "http://142.93.148.116/data/TreeHt/{z}/{x}/{y}.png",
+                 group = "TreeHeight") %>% 
         invokeMethod(data = colDefer, method = "addOGTiles", 
                      ~ID, ~Col, defer_server, defer_layer,1) %>%
         invokeMethod(data = colRare, method = "addOGTiles", 
@@ -64,8 +70,9 @@ server <- function(input, output) {
                      ~ID, ~Col, cb_server, cb_layer,0.5) %>%
         leaflet::addLayersControl(
           baseGroups = c("Positron","Satellite", "OpenStreetMap","BGCs"),
-          overlayGroups = c("Seral","Defer","Rare","Ancient","Cutblocks"),
-          position = "topright")
+          overlayGroups = c("SiteIndex","Disturbance","Protected","TreeHeight","Defer","Rare","Ancient","Cutblocks"),
+          position = "topright") %>%
+        hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight"))
     })
     
     observeEvent(input$defer_click,{

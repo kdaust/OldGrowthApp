@@ -48,6 +48,18 @@
     },
     "cSI": {
       "mbtiles": "cSI.mbtiles"
+<<<<<<< HEAD
+=======
+    },
+    "Disturb": {
+      "mbtiles": "Disturb.mbtiles"
+    },
+    "Protected": {
+      "mbtiles": "Protected.mbtiles"
+    },
+    "TreeHt": {
+      "mbtiles": "TreeHt.mbtiles"
+>>>>>>> 905103a36a41148500dd383cf5f92f9c021214ee
     }
   }
 }
