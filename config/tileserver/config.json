@@ -46,8 +46,17 @@
     "Defer": {
       "mbtiles": "tiles2.mbtiles"
     },
-    "RastTest": {
-      "mbtiles": "test.mbtiles"
+    "cSI": {
+      "mbtiles": "cSI.mbtiles"
+    },
+    "Disturb": {
+      "mbtiles": "Disturb.mbtiles"
+    },
+    "Protected": {
+      "mbtiles": "Protected.mbtiles"
+    },
+    "TreeHt": {
+      "mbtiles": "TreeHt.mbtiles"
     }
   }
 }
