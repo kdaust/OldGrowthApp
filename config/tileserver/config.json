@@ -46,8 +46,8 @@
     "Defer": {
       "mbtiles": "tiles2.mbtiles"
     },
-    "RastTest": {
-      "mbtiles": "test.mbtiles"
+    "cSI": {
+      "mbtiles": "cSI.mbtiles"
     }
   }
 }
