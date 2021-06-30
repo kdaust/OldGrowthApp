@@ -18,11 +18,14 @@ ancient_server <- "http://142.93.148.116/data/Ancient/{z}/{x}/{y}.pbf"
 ancient_layer <- "Ancient"
 cb_server <- "http://142.93.148.116/data/Cutblocks/{z}/{x}/{y}.pbf"
 cb_layer <- "Cutblocks"
+seral_server <- "http://142.93.148.116/data/Seral/{z}/{x}/{y}.pbf"
+seral_layer <- "Seral"
 
 colDefer <- data.table(ID = c(1,2,3),Col = c("#d41919","#d44402","#d402d1"))
 colAncient <- data.table(ID = c(1,2),Col = c("#d61593","#d61593"))
 colRare <- data.table(ID = c(1,2),Col = c("#158cd6","#1d357d"))
 colCB <- data.table(ID = c(1,2,3),Col = c("#59341d","#a14c18","#e0996e"))
+colSeral <- data.table(ID = c(3,4),Col = c("#3ac421", "#1d6e3e"))
 
 load("Defer_Info.Rdata")
 dat[,Area := as.numeric(Area)]
@@ -70,11 +73,14 @@ server <- function(input, output) {
                      ~ID, ~Col, ancient_server, ancient_layer,1) %>%
         invokeMethod(data = colCB, method = "addOGTiles",
                      ~ID, ~Col, cb_server, cb_layer,0.5) %>%
+        invokeMethod(data = colSeral, method = "addSeralTiles",
+                     ~ID, ~Col, seral_server, seral_layer, 0.7) %>%
         leaflet::addLayersControl(
           baseGroups = c("Positron","Satellite", "OpenStreetMap","BGCs"),
-          overlayGroups = c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume", "Defer","Rare","Ancient","Cutblocks"),
+          overlayGroups = c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume",
+                            "Seral","Defer","Rare","Ancient","Cutblocks"),
           position = "topright") %>%
-        hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume"))
+        hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume","Seral"))
     })
     
     observeEvent(input$defer_click,{

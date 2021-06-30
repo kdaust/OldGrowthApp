@@ -90,6 +90,53 @@ jscode_defer <- paste0(
 
       });
       
+    };
+
+    window.LeafletWidget.methods.addSeralTiles = function(Class,Colour,server,layID,opa) {
+      var subzoneColors = {};
+      Class.forEach((id,i) => {
+        const col = Colour[i];
+        subzoneColors[id] = col;
+      });
+      
+      var map = this;
+      
+      var vectorTileOptions=function(layerName, layerId, activ,
+                                     lfPane, colorMap, prop, id) {
+        return {
+          vectorTileLayerName: layerName,
+          interactive: true, 
+          vectorTileLayerStyles: {
+            [layerId]: function(properties, zoom) {
+              return {
+                weight: 0,
+                fillColor: colorMap[properties[prop]],
+                fill: true,
+                fillOpacity: opa
+              }
+            }
+          },
+          pane : lfPane,
+          getFeatureId: function(f) {
+            return f.properties[id];
+          }
+        }
+        
+      };
+      
+      var subzLayer = L.vectorGrid.protobuf(
+        server,
+        vectorTileOptions(layID, layID, true,
+                          "tilePane", subzoneColors, "Seral", "Seral")
+      )
+      this.layerManager.addLayer(subzLayer, "tile", layID, layID);
+
+      subzLayer.on("click", function(e){
+        Shiny.setInputValue("seral_click",e.layer.properties.PolyID);
+      });
+
+      subzLayer.bringToFront();
+      
     };')
 
 leafletjs_defer <-  tags$head(
