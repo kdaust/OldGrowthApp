@@ -3,7 +3,7 @@ library(sf)
 library(stars)
 library(raster)
 library(fasterize)
-
+library(colourvalues)
 
 rast <- raster("./RasterData/cSI.tif")
 NAvalue(rast) <- 0
@@ -18,12 +18,41 @@ writeRaster(temp,"cSI_RGBA.tif", overwrite = T)
 rast <- raster("./RasterData/Disturbance.tif")
 NAvalue(rast) <- 0
 crs(rast) <- 3005
-cols <- c("#a86507ff","#e5ed00ff","#99ff00ff","#67d916ff",
-          "#4a9911ff","#295708ff","#193605ff")
-temp <- RGB(rast,filename = "cSI_RGB.tif", col = cols,breaks = 1:8, 
+cols <- c("#cf3f1f","#f09826","#c78306","#72a1ad",
+          "#72a1ad","#5c331c","#5c331c")
+temp <- RGB(rast, col = cols,breaks = seq(0.5,7.5,by = 1), 
             alpha = T, overwrite = T)
-temp$cSI_RGB.4[temp$cSI_RGB.1 == 255] <- 0
-writeRaster(temp,"cSI_RGBA.tif", overwrite = T)
+temp$alpha[temp$red == 255] <- 0
+writeRaster(temp,"Disturb_RGBA.tif", overwrite = T)
+
+rast <- raster("./RasterData/Protect_Select_2021.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c("#787878")
+temp <- RGB(rast, col = cols,breaks = c(0.5,1.5), 
+            alpha = T, overwrite = T)
+temp$alpha[temp$red == 255] <- 0
+writeRaster(temp,"Protected_RGBA.tif", overwrite = T)
+
+rast <- raster("./RasterData/TreeHeight.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c(viridis(100),rep("#000000",156))
+colortable(rast) <- cols
+temp <- RGB(rast, alpha = T, overwrite = T)
+values(temp$alpha) <- 255
+temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
+writeRaster(temp,"TreeHt_RGBA.tif", overwrite = T)
+
+rast <- raster("./RasterData/TreeVolume100.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+
+cols <- c(viridis(100,alpha = NULL),rep("#000000",156))
+colortable(rast) <- cols
+temp <- RGB(rast,col = viridis(20),breaks = seq(0,1000,length.out = 21), alpha = T, overwrite = T)
+temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
+writeRaster(temp,"TreeVol_RGBA.tif", overwrite = T)
 
 #####
 rast <- raster("Raster_Template.tif")
