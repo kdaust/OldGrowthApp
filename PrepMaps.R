@@ -25,26 +25,32 @@ temp <- RGB(rast,filename = "cSI_RGB.tif", col = cols,breaks = 1:8,
 temp$cSI_RGB.4[temp$cSI_RGB.1 == 255] <- 0
 writeRaster(temp,"cSI_RGBA.tif", overwrite = T)
 
+#####
 rast <- raster("Raster_Template.tif")
-vect <- st_read(dsn = "./OG_ShapeFiles/Defer")
+vect <- st_read(dsn = "./OG_ShapeFiles/Rare")
 vect <- st_transform(vect, st_crs(rast))
 rastTemp <- fasterize(vect, rast, field = "PolyID")
-rast2 <- raster("./RasterData/FocalMeanTreeVolumeBEC.tif")
+rast2 <- raster("./RasterData/TreeVolume100.tif")
 stk <- stack(rast2,rastTemp)
 dat <- as.data.table(as.data.frame(stk))
 dat <- na.omit(dat,cols = "layer")
 setnames(dat,c("Values","PolyID"))
-dat2 <- dat[,.(TreeVolume = mean(Values)), by = .(PolyID)]
-fwrite(dat2,"Defer_TreeHeight.csv")
+dat2 <- dat[,.(Volume = mean(Values)), by = .(PolyID)]
+fwrite(dat2,"Rare_TreeVolume.csv")
 # rst <- read_stars("Rare.tif",proxy = F)
 # rst$Rare.tif <- as.numeric(rst$Rare.tif)
 # st_crs(rst) <- 3005
 # r <- as(rst,"Raster")
 # writeRaster(r,"temp.tif",format = "GTiff", overwrite = T)
 
-rst <- read_stars("Ancient_Save.tif",proxy = F)
+rst <- read_stars("./RasterData/SeralClass_New.tif",proxy = F)
 rpoly <- st_as_sf(rst,merge = T,use_integer = T,na.rm = T)
-st_write(rpoly,"Ancient.gpkg")
+st_write(rpoly,"SeralClass.gpkg")
+colnames(rpoly)[1] <- "Seral"
+rpoly <- rpoly[rpoly$Seral %in% c(3,4),]
+library(rmapshaper)
+rp2 <- ms_simplify(rpoly,keep = 0.1, sys = T)
+st_write(rp2,dsn = "Seral34.gpkg")
 
 dat <- st_read("./VectorData/Defer.gpkg")
 vect$Area <- st_area(vect)
