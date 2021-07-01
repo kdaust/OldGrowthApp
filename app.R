@@ -35,17 +35,23 @@ forestDat <- fread("./ForestByBGC.csv")
 
 ui <- fluidPage(
   titlePanel("Forest Vision"),
-  h3("The P(rice)H(olt)D(aust) Portal"),
   fluidRow(
-              useShinyalert(),
-              leafletjs_defer,
-              leafletOutput("map", height = "95vh")
+    column(2,
+           h2("Instructions"),
+           checkboxGroupInput("seralClass",label = "Show seral stage:",
+                                     choices = c(3,4),selected = 4,inline = T)
+           ),
+    column(10,
+           useShinyalert(),
+           leafletjs_defer,
+           leafletOutput("map", height = "90vh")
            )
+      )
   
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
     output$map <- renderLeaflet({
       leaflet() %>%
         setView(lng = -122.77222, lat = 51.2665, zoom = 9) %>%
@@ -81,6 +87,13 @@ server <- function(input, output) {
                             "Seral","Defer","Rare","Ancient","Cutblocks"),
           position = "topright") %>%
         hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume","Seral"))
+    })
+    
+    observeEvent(input$seralClass,{
+      show <- input$seralClass
+      hide <- !c(3,4) %in% show
+      dat <- list(show = show,hide = hide)
+      session$sendCustomMessage("hideSeral",dat)
     })
     
     observeEvent(input$defer_click,{

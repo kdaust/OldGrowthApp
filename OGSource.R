@@ -137,6 +137,28 @@ jscode_defer <- paste0(
 
       subzLayer.bringToFront();
       
+      let styleNone = {
+            weight: 0,
+            fillOpacity: 0,
+            fill: false
+          };
+      
+      Shiny.addCustomMessageHandler("hideSeral",function(dat){
+        clear = dat["hide"];
+        show = dat["show"];
+        if(!Array.isArray(clear)){
+          clear = [clear];
+        }
+        if(!Array.isArray(show)){
+          show = [show];
+        }
+        show.forEach(ID => {
+          subzLayer.resetFeatureStyle(ID);
+        });
+        clear.forEach(ID => {
+          subzLayer.setFeatureStyle(ID,styleNone);
+        });
+      });
     };')
 
 leafletjs_defer <-  tags$head(
