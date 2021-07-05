@@ -27,19 +27,25 @@ colRare <- data.table(ID = c(1,2),Col = c("#158cd6","#1d357d"))
 colCB <- data.table(ID = c(1,2,3),Col = c("#59341d","#a14c18","#e0996e"))
 colSeral <- data.table(ID = c(3,4),Col = c("#3ac421", "#1d6e3e"))
 
-load("Defer_Info.Rdata")
-dat[,Area := as.numeric(Area)]
+load("./InputDat/Defer_Info.Rdata")
+load("./InputDat/Ancient_Info.Rdata")
+ancientDat <- rareDat
+load("./InputDat/Rare_Info.Rdata")
 
-deferDat<- fread("./DeferByBGC.csv")
-forestDat <- fread("./ForestByBGC.csv")
+deferDatBGC <- fread("./InputDat/DeferByBGC.csv")
+forestDatBGC <- fread("./InputDat/ForestByBGC.csv")
 
 ui <- fluidPage(
-  titlePanel("Forest Vision"),
+  h1("Forest Vision", style = "color: gold; background-color: #215c21; text-align: center; border-radius: 1em; padding: .5em; font-family: calibri, sans-serif; font-size: 2.8em;"),
   fluidRow(
     column(2,
            h2("Instructions"),
-           checkboxGroupInput("seralClass",label = "Show seral stage:",
-                                     choices = c(3,4),selected = 4,inline = T)
+           p("You can turn layers on or off using the pop-up box on the top right.
+             There are various choices of base layers and overlay layers. To get 
+             summarised statistics by polygon, click on a polygon. To show summaries
+             by BEC subzone/variant, select the BGC base layer, and click on the BGC unit.")
+           # checkboxGroupInput("seralClass",label = "Show seral stage:",
+           #                           choices = c(3,4),selected = 4,inline = T)
            ),
     column(10,
            useShinyalert(),
@@ -64,13 +70,13 @@ server <- function(input, output, session) {
         addTiles(urlTemplate = "http://142.93.148.116/data/cSI/{z}/{x}/{y}.png",
                  group = "SiteIndex",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/Disturb/{z}/{x}/{y}.png",
-                 group = "Disturbance") %>% 
+                 group = "Disturbance",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/Protected/{z}/{x}/{y}.png",
-                 group = "Protected") %>% 
+                 group = "Protected",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/TreeHt/{z}/{x}/{y}.png",
-                 group = "TreeHeight") %>% 
+                 group = "TreeHeight",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/TreeVol/{z}/{x}/{y}.png",
-                 group = "TreeVolume") %>% 
+                 group = "TreeVolume",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
         invokeMethod(data = colDefer, method = "addOGTiles", 
                      ~ID, ~Col, defer_server, defer_layer,1) %>%
         invokeMethod(data = colRare, method = "addOGTiles", 
@@ -82,33 +88,42 @@ server <- function(input, output, session) {
         invokeMethod(data = colSeral, method = "addSeralTiles",
                      ~ID, ~Col, seral_server, seral_layer, 0.7) %>%
         leaflet::addLayersControl(
-          baseGroups = c("Positron","Satellite", "OpenStreetMap","BGCs"),
+          baseGroups = c("Positron","Satellite","OpenStreetMap","BGCs"),
           overlayGroups = c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume",
                             "Seral","Defer","Rare","Ancient","Cutblocks"),
           position = "topright") %>%
-        hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume","Seral"))
+        hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume","Seral","Cutblocks"))
     })
     
     observeEvent(input$seralClass,{
       show <- input$seralClass
-      hide <- !c(3,4) %in% show
+      hide <- c(3,4)[!c(3,4) %in% show]
+      hide <- as.character(hide)
       dat <- list(show = show,hide = hide)
+      print(dat)
       session$sendCustomMessage("hideSeral",dat)
     })
     
     observeEvent(input$defer_click,{
-      if(input$layer_click == "Defer"){
-        output$defer_info <- renderRHandsontable({
-          d1 <- dat[PolyID == input$defer_click,]
-          rhandsontable(d1)
-        })
-      }
-    })
+      output$defer_info <- renderRHandsontable({
+        if(input$layer_click == "Defer"){
+          d1 <- deferDat[PolyID == input$defer_click,!"PolyID"]
+        }else if(input$layer_click == "Rare"){
+          d1 <- rareDat[PolyID == input$defer_click,!"PolyID"]
+        }else{
+          d1 <- ancientDat[PolyID == input$defer_click,!"PolyID"]
+        }
+        d1 <- t(d1)
+        colnames(d1) <- "Value"
+        rhandsontable(d1,rowHeaderWidth = 140) %>%
+          hot_cols(colWidths = 100)
+      })
+  })
     
     getBGCdat <- reactive({
-      dat <- deferDat[BGC == input$bgc_click,.(SIClass,Area,Var)]
+      dat <- deferDatBGC[BGC == input$bgc_click,.(SIClass,Area,Var)]
       dat <- dcast(dat, Var ~ SIClass, value.var = "Area")
-      dat2 <- forestDat[BGC == input$bgc_click,.(SIClass,Area,Var)]
+      dat2 <- forestDatBGC[BGC == input$bgc_click,.(SIClass,Area,Var)]
       dat2 <- dcast(dat2, Var ~ SIClass, value.var = "Area")
       return(list(defer = dat, forest = dat2))
     })
@@ -139,9 +154,10 @@ server <- function(input, output, session) {
     })
     
     observeEvent(input$defer_click,{
+      
       shinyalert(html = T,
                  text = tagList(
-                   h3("Summary of Productive Polygon"),
+                   h3(paste0("Summary by Polygon: ",input$layer_click)),
                    hr(),
                    rHandsontableOutput("defer_info")
                  )

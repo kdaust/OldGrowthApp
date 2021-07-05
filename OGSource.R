@@ -130,20 +130,20 @@ jscode_defer <- paste0(
                           "tilePane", subzoneColors, "Seral", "Seral")
       )
       this.layerManager.addLayer(subzLayer, "tile", layID, layID);
-
+      console.log(subzLayer);
       subzLayer.on("click", function(e){
-        Shiny.setInputValue("seral_click",e.layer.properties.PolyID);
+        Shiny.setInputValue("seral_click",e.layer.properties.Seral);
       });
 
-      subzLayer.bringToFront();
-      
       let styleNone = {
             weight: 0,
             fillOpacity: 0,
-            fill: false
+            fill: true,
+            fillColor: "#FFFFFF"
           };
       
       Shiny.addCustomMessageHandler("hideSeral",function(dat){
+        console.log(dat);
         clear = dat["hide"];
         show = dat["show"];
         if(!Array.isArray(clear)){
@@ -152,10 +152,10 @@ jscode_defer <- paste0(
         if(!Array.isArray(show)){
           show = [show];
         }
-        show.forEach(ID => {
+        show.forEach((ID) => {
           subzLayer.resetFeatureStyle(ID);
         });
-        clear.forEach(ID => {
+        clear.forEach((ID) => {
           subzLayer.setFeatureStyle(ID,styleNone);
         });
       });

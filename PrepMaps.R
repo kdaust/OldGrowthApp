@@ -34,12 +34,13 @@ temp <- RGB(rast, col = cols,breaks = c(0.5,1.5),
 temp$alpha[temp$red == 255] <- 0
 writeRaster(temp,"Protected_RGBA.tif", overwrite = T)
 
+cols <- c("#ffecb3","#b2f200", "#78a302","#058f00", "#035700", "#032401")
 rast <- raster("./RasterData/TreeHeight.tif")
 NAvalue(rast) <- 0
 crs(rast) <- 3005
-cols <- c(viridis(100),rep("#000000",156))
-colortable(rast) <- cols
-temp <- RGB(rast, alpha = T, overwrite = T)
+cols <- c("#ffecb3","#b2f200", "#78a302","#058f00", "#035700", "#032401")
+temp <- RGB(rast, col = cols,breaks = c(0,10,20,30,40,50,100), 
+            alpha = T, overwrite = T)
 values(temp$alpha) <- 255
 temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
 writeRaster(temp,"TreeHt_RGBA.tif", overwrite = T)
@@ -56,16 +57,16 @@ writeRaster(temp,"TreeVol_RGBA.tif", overwrite = T)
 
 #####
 rast <- raster("Raster_Template.tif")
-vect <- st_read(dsn = "./OG_ShapeFiles/Rare")
+vect <- st_read(dsn = "./OG_ShapeFiles/Ancient")
 vect <- st_transform(vect, st_crs(rast))
 rastTemp <- fasterize(vect, rast, field = "PolyID")
-rast2 <- raster("./RasterData/TreeVolume100.tif")
+rast2 <- raster("./RasterData/FocalMeanSite.tif")
 stk <- stack(rast2,rastTemp)
 dat <- as.data.table(as.data.frame(stk))
 dat <- na.omit(dat,cols = "layer")
 setnames(dat,c("Values","PolyID"))
-dat2 <- dat[,.(Volume = mean(Values)), by = .(PolyID)]
-fwrite(dat2,"Rare_TreeVolume.csv")
+dat2 <- dat[,.(MeanSite = mean(Values)), by = .(PolyID)]
+fwrite(dat2,"Ancient_MeanSite.csv")
 # rst <- read_stars("Rare.tif",proxy = F)
 # rst$Rare.tif <- as.numeric(rst$Rare.tif)
 # st_crs(rst) <- 3005
@@ -81,19 +82,48 @@ library(rmapshaper)
 rp2 <- ms_simplify(rpoly,keep = 0.1, sys = T)
 st_write(rp2,dsn = "Seral34.gpkg")
 
-dat <- st_read("./VectorData/Defer.gpkg")
+vect <- st_read("./OG_ShapeFiles/Defer")
 vect$Area <- st_area(vect)
+vect$Area <- units::set_units(vect$Area,"ha")
 d1 <- fread("Defer_AgeClass.csv")
 d2 <- fread("Defer_MeanSite.csv")
 d3 <- fread("Defer_TreeHeight.csv")
-d4 <- fread("Defer_TreeVol.csv")
+d4 <- fread("Defer_TreeVolume.csv")
 d1[d2,MeanSite := i.MeanSite, on = "PolyID"]
-d1[d3,TreeHeight := i.TreeHeight, on = "PolyID"]
-d1[d4,TreeVol := i.TreeVolume, on = "PolyID"]
+d1[d3,TreeHeight := i.Height, on = "PolyID"]
+d1[d4,TreeVol := i.Volumne, on = "PolyID"]
+
+vect <- st_read("./OG_ShapeFiles/Rare")
+vect$Area <- st_area(vect)
+vect$Area <- units::set_units(vect$Area,"ha")
+d1 <- fread("Rare_MeanSite.csv")
+d2 <- fread("Rare_TreeHeight.csv")
+d3 <- fread("Rare_TreeVolume.csv")
+d1[d2,MeanSite := i.Height, on = "PolyID"]
+d1[d3,TreeHeight := i.Volume, on = "PolyID"]
+
 
 dat <- as.data.table(st_drop_geometry(vect))
 dat <- dat[d1,on = "PolyID"]
-save(dat,file = "Defer_Info.Rdata")
+dat[,Area := units::drop_units(Area)]
+rareDat <- dat
+save(rareDat,file = "Rare_Info.Rdata")
+
+vect <- st_read("./OG_ShapeFiles/Ancient")
+vect$Area <- st_area(vect)
+vect$Area <- units::set_units(vect$Area,"ha")
+d1 <- fread("Ancient_MeanSite.csv")
+d2 <- fread("Ancient_TreeHeight.csv")
+d3 <- fread("Ancient_TreeVolume.csv")
+d1[d2,MeanSite := i.Height, on = "PolyID"]
+d1[d3,TreeHeight := i.Volumne, on = "PolyID"]
+
+
+dat <- as.data.table(st_drop_geometry(vect))
+dat <- dat[d1,on = "PolyID"]
+dat[,Area := units::drop_units(Area)]
+ancientDat <- dat
+save(rareDat,file = "Ancient_Info.Rdata")
 
 
 ###summaries by BGC
