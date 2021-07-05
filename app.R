@@ -62,7 +62,7 @@ server <- function(input, output, session) {
         addPlugin() %>%
         addBGCTiles() %>%
         addTiles(urlTemplate = "http://142.93.148.116/data/cSI/{z}/{x}/{y}.png",
-                 group = "SiteIndex") %>% 
+                 group = "SiteIndex",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/Disturb/{z}/{x}/{y}.png",
                  group = "Disturbance") %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/Protected/{z}/{x}/{y}.png",
