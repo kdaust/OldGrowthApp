@@ -46,6 +46,9 @@
     "Defer": {
       "mbtiles": "tiles2.mbtiles"
     },
+    "Seral": {
+      "mbtiles": "seral.mbtiles"
+    },
     "cSI": {
       "mbtiles": "cSI.mbtiles"
     },
