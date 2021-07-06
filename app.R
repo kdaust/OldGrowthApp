@@ -70,13 +70,15 @@ server <- function(input, output, session) {
         addTiles(urlTemplate = "http://142.93.148.116/data/cSI/{z}/{x}/{y}.png",
                  group = "SiteIndex",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/Disturb/{z}/{x}/{y}.png",
-                 group = "Disturbance",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
+                 group = "Disturbance",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/Protected/{z}/{x}/{y}.png",
-                 group = "Protected",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
+                 group = "Protected",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/TreeHt/{z}/{x}/{y}.png",
-                 group = "TreeHeight",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
+                 group = "TreeHeight",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
         addTiles(urlTemplate = "http://142.93.148.116/data/TreeVol/{z}/{x}/{y}.png",
-                 group = "TreeVolume",options = tileOptions(minZoom = 5, maxZoom = 15)) %>% 
+                 group = "TreeVolume",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
+        addTiles(urlTemplate = "http://142.93.148.116/data/Seral/{z}/{x}/{y}.png",
+                 group = "TreeVolume",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
         invokeMethod(data = colDefer, method = "addOGTiles", 
                      ~ID, ~Col, defer_server, defer_layer,1) %>%
         invokeMethod(data = colRare, method = "addOGTiles", 
@@ -85,8 +87,6 @@ server <- function(input, output, session) {
                      ~ID, ~Col, ancient_server, ancient_layer,1) %>%
         invokeMethod(data = colCB, method = "addOGTiles",
                      ~ID, ~Col, cb_server, cb_layer,0.5) %>%
-        invokeMethod(data = colSeral, method = "addSeralTiles",
-                     ~ID, ~Col, seral_server, seral_layer, 0.7) %>%
         leaflet::addLayersControl(
           baseGroups = c("Positron","Satellite","OpenStreetMap","BGCs"),
           overlayGroups = c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume",
