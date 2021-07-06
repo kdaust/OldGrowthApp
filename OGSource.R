@@ -21,7 +21,7 @@ addPlugin <- function(map) {
 }
 
 jscode_defer <- paste0(
-'window.LeafletWidget.methods.addOGTiles = function(Class,Colour,server,layID,opa) {
+'window.LeafletWidget.methods.addOGTiles = function(Class,Colour,server,layID,layName,opa) {
       var subzoneColors = {};
       Class.forEach((id,i) => {
         const col = Colour[i];
@@ -55,11 +55,11 @@ jscode_defer <- paste0(
       
       var subzLayer = L.vectorGrid.protobuf(
         server,
-        vectorTileOptions(layID, layID, true,
+        vectorTileOptions(layName, layID, true,
                           "tilePane", subzoneColors, "ID", "ID")
       )
       console.log(subzLayer);
-      this.layerManager.addLayer(subzLayer, "tile", layID, layID);
+      this.layerManager.addLayer(subzLayer, "tile", layID, layName);
 
       subzLayer.on("click", function(e){
         Shiny.setInputValue("layer_click",layID);
