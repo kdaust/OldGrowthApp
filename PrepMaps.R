@@ -8,11 +8,11 @@ library(colourvalues)
 rast <- raster("./RasterData/cSI.tif")
 NAvalue(rast) <- 0
 crs(rast) <- 3005
-cols <- c("#a86507ff","#e5ed00ff","#99ff00ff","#67d916ff",
-          "#4a9911ff","#295708ff","#193605ff")
-temp <- RGB(rast,filename = "cSI_RGB.tif", col = cols,breaks = 1:8, 
+cols <- c("#ffecb3","#ffe32b", "#b2f200", "#78a302","#058f00", "#035700", "#032401")
+temp <- RGB(rast,col = cols,breaks = c(0.5,1.5,2.5,3.5,4.5,5.5,6.5,10), 
             alpha = T, overwrite = T)
-temp$cSI_RGB.4[temp$cSI_RGB.1 == 255] <- 0
+values(temp$alpha) <- 255
+temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
 writeRaster(temp,"cSI_RGBA.tif", overwrite = T)
 
 rast <- raster("./RasterData/Disturbance.tif")
@@ -34,7 +34,6 @@ temp <- RGB(rast, col = cols,breaks = c(0.5,1.5),
 temp$alpha[temp$red == 255] <- 0
 writeRaster(temp,"Protected_RGBA.tif", overwrite = T)
 
-cols <- c("#ffecb3","#b2f200", "#78a302","#058f00", "#035700", "#032401")
 rast <- raster("./RasterData/TreeHeight.tif")
 NAvalue(rast) <- 0
 crs(rast) <- 3005
@@ -48,12 +47,20 @@ writeRaster(temp,"TreeHt_RGBA.tif", overwrite = T)
 rast <- raster("./RasterData/TreeVolume100.tif")
 NAvalue(rast) <- 0
 crs(rast) <- 3005
-
-cols <- c(viridis(100,alpha = NULL),rep("#000000",156))
-colortable(rast) <- cols
-temp <- RGB(rast,col = viridis(20),breaks = seq(0,1000,length.out = 21), alpha = T, overwrite = T)
+cols <- c("#ffecb3","#ffe32b", "#b2f200", "#78a302","#058f00", "#035700", "#032401")
+br <- c(0,20,50,75,100,250,500,1000)
+temp <- RGB(rast,col = cols,breaks = br, alpha = T, overwrite = T)
 temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
 writeRaster(temp,"TreeVol_RGBA.tif", overwrite = T)
+
+rast <- raster("./RasterData/SeralClass.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c("#ffecb3","#b2f200", "#035700")
+br <- c(0.5,2.5,3.5,4.5)
+temp <- RGB(rast,col = cols,breaks = br, alpha = T, overwrite = T)
+temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
+writeRaster(temp,"Seral_RGBA.tif", overwrite = T)
 
 #####
 rast <- raster("Raster_Template.tif")

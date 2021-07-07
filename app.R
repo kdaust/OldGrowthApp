@@ -98,10 +98,56 @@ server <- function(input, output, session) {
                      ~ID, ~Col, cb_server, cb_layer,"NewCutblocks", 0.5) %>%
         leaflet::addLayersControl(
           baseGroups = c("Hillshade","Satellite","BGCs"),
-          overlayGroups = c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume",
-                            "Seral","Productive","Rare","Ancient","NewCutblocks","Cities"),
+          overlayGroups = c("SiteIndex","Disturbance","TreeHeight","TreeVolume",
+                            "Seral","Productive","Rare","Ancient","NewCutblocks","Protected","Cities"),
           position = "topright") %>%
+        addLegend(position = "bottomright",
+                  labels = c("Best 1-3%","Best 4-10%"),
+                  colors = c("#d41919ff","#d44402ff"),
+                  title = "Best Productive",
+                  group = "Productive") %>%
+        addLegend(position = "bottomright",
+                  labels = c("Rare","Rare by BGC"),
+                  colors = c("#158cd6","#1d357d"),
+                  title = "Rare Forest",
+                  group = "Rare") %>% 
+        addLegend(position = "bottomright",
+                  labels = c("Ancient"),
+                  colors = c("#d61593"),
+                  title = "Ancient Forest",
+                  group = "Ancient") %>% 
+        addLegend(position = "bottomleft",
+                  labels = c("0-5","5-10","10-15","15-20","20-25","25-30","30+"),
+                  colors = c("#ffecb3","#ffe32b", "#b2f200", "#78a302","#058f00", "#035700", "#032401"),
+                  title = "Site Index",
+                  group = "SiteIndex") %>% 
+        addLegend(position = "bottomleft",
+                  labels = c("Burn","Insect","Disease","Abiotic","Logged"),
+                  colors = c("#cf3f1f","#f09826","#c78306","#72a1ad","#5c331c"),
+                  title = "Disturbance Class",
+                  group = "Disturbance") %>%
+        addLegend(position = "bottomleft",
+                  labels = c("0-10","10-20","20-30","30-40","40-50","50+"),
+                  colors = c("#ffecb3","#b2f200", "#78a302","#058f00", "#035700", "#032401"),
+                  title = "Tree Height",
+                  group = "TreeHeight") %>%
+        addLegend(position = "bottomleft",
+                  labels = c("0-20","20-50","50-75","75-100","100-250","250-500","500+"),
+                  colors = c("#ffecb3","#ffe32b", "#b2f200", "#78a302","#058f00", "#035700", "#032401"),
+                  title = "Tree Volume",
+                  group = "TreeVolume") %>%
+        addLegend(position = "bottomleft",
+                  labels = c("Young","Mature","Old"),
+                  colors = c("#ffecb3","#b2f200", "#035700"),
+                  title = "Seral Stage",
+                  group = "Seral") %>%
+        addLegend(position = "bottomleft",
+                  labels = c("Young","Mature","Old"),
+                  colors = c("#ffecb3","#b2f200", "#035700"),
+                  title = "Cutblocks",
+                  group = "NewCutblocks") %>%
         hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume","Seral","NewCutblocks"))
+        
     })
     
     observeEvent(input$seralClass,{
