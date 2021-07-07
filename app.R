@@ -39,20 +39,16 @@ forestDatBGC <- fread("./InputDat/ForestByBGC.csv")
 ui <- fluidPage(
   h1("Forest Vision", style = "color: gold; background-color: #215c21; text-align: center; border-radius: 1em; padding: .5em; font-family: calibri, sans-serif; font-size: 2.8em;"),
   fluidRow(
-    column(2,
            h2("Instructions"),
            p("You can turn layers on or off using the pop-up box on the top right.
              There are various choices of base layers and overlay layers. To get 
              summarised deferral statistics by polygon, click on a polygon (productive, ancient, or rare). 
-             To show summaries by BEC subzone/variant, select the BGC base layer, and click on the BGC unit.")
+             To show summaries by BEC subzone/variant, select the BGC base layer, and click on the BGC unit."),
            # checkboxGroupInput("seralClass",label = "Show seral stage:",
            #                           choices = c(3,4),selected = 4,inline = T)
-           ),
-    column(10,
            useShinyalert(),
            leafletjs_defer,
-           leafletOutput("map", height = "90vh")
-           )
+           leafletOutput("map", height = "80vh")
       )
   
 )
@@ -142,8 +138,8 @@ server <- function(input, output, session) {
                   title = "Seral Stage",
                   group = "Seral") %>%
         addLegend(position = "bottomleft",
-                  labels = c("Young","Mature","Old"),
-                  colors = c("#ffecb3","#b2f200", "#035700"),
+                  labels = c("Planned","Recent"),
+                  colors = c("#59341d","#a14c18"),
                   title = "Cutblocks",
                   group = "NewCutblocks") %>%
         hideGroup(c("SiteIndex","Disturbance","Protected","TreeHeight","TreeVolume","Seral","NewCutblocks"))
