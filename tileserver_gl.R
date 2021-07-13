@@ -6,15 +6,15 @@ library(bccciss)
 library(ssh)
 
 out_dir <- "./data-raw/shp"
-shp_name <- "Defer.shp"
-layer <- "Defer"
+shp_name <- "Resil.shp"
+layer <- "Resilience"
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
-dat <- st_read("./VectorData/Cutblocks.gpkg")
+dat <- st_read("./Resilience.gpkg")
 dat <- st_transform(dat,4326)
 colnames(dat)[1] <- "ID"
 dat$PolyID <- seq_along(dat$ID)
-st_write(dat,dsn = out_dir,layer = "Cutblocks", driver = "ESRI Shapefile")
+st_write(dat,dsn = out_dir,layer = "Resilience", driver = "ESRI Shapefile")
 
 # Digital Ocean provisioning - Setup your SSH keys in your accounts before running these.
 tileserver <- setup_docklet(size = "s-1vcpu-2gb")
@@ -43,7 +43,7 @@ remote_shp_tiles_new <- function(droplet, ..., source_dir, remote_dir = "/tmp/sh
     geojsons <- shQuote(file.path(remote_dir, paste0(names(layers), ".geojson")))
   }
   
-  base_cmd <- "tippecanoe -o /mapdata/defertiles.mbtiles"
+  base_cmd <- "tippecanoe -o /mapdata/resilience.mbtiles"
   cmd <- paste(base_cmd, paste(..., collapse = " "), paste(geojsons, collapse = " "))
   analogsea::droplet_ssh(droplet, cmd)
   analogsea::droplet_ssh(droplet, "ls -alh /mapdata | grep mbtiles")
@@ -52,8 +52,8 @@ remote_shp_tiles_new <- function(droplet, ..., source_dir, remote_dir = "/tmp/sh
   
 }
 
-remote_shp_tiles(tileserver,
-                 "-z18 --simplification=10 --force --coalesce-densest-as-needed --extend-zooms-if-still-dropping --detect-shared-borders",
+remote_shp_tiles_new(tileserver,
+                 "-z15 -Z8 --simplification=10 --force --coalesce-densest-as-needed --extend-zooms-if-still-dropping --detect-shared-borders",
                  source_dir = out_dir, skip_upload = F)
 launch_tileserver(tileserver, config = "./config/tileserver/config.json")
 

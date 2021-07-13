@@ -6,6 +6,7 @@ library(htmltools)
 library(htmlwidgets)
 library(rhandsontable)
 library(shinyalert)
+library(shinyWidgets)
 source("./OGSource.R")
 
 mbtk="pk.eyJ1Ijoid2htYWNrZW4iLCJhIjoiY2twaDVkNXU5MmJieTJybGE3cWRtY3Q4aCJ9.ISBkzSHFfrr78AVP2y2FeQ"
@@ -36,21 +37,111 @@ load("./InputDat/Rare_Info.Rdata")
 deferDatBGC <- fread("./InputDat/DeferByBGC.csv")
 forestDatBGC <- fread("./InputDat/ForestByBGC.csv")
 
+##Import text
+t1 <- readLines("./InputDat/ForestVision_Text.txt", warn = F)
+start <- grep("About this site",t1)
+stop <- grep("What is Old Growth",t1)
+aboutTxt <- t1[(start+1):(stop-1)]
+start <- grep("What is Old Growth",t1)
+stop <- grep("Types of Old Growth",t1)
+whatisTxt <- t1[(start+1):(stop-1)]
+start <- grep("Types of Old Growth",t1)
+stop <- grep("BC Old Growth status",t1)
+typesTxt <- paste(t1[(start+1):(stop-1)],collapse = "\n")
+start <- grep("BC Old Growth status",t1)
+stop <- grep("At Risk Old Growth",t1)
+statusTxt <- paste(t1[(start+1):(stop-1)],collapse = "\n")
+start <- grep("At Risk Old Growth",t1)
+stop <- grep("Forest Resilience",t1)
+atriskTxt <- paste(t1[(start+1):(stop-1)],collapse = "\n")
+start <- grep("Forest Resilience",t1)
+stop <- grep("Forest Carbon",t1)
+resilienceTxt <- paste(t1[(start+1):(stop-1)],collapse = "\n")
+
+
 ui <- fluidPage(
-  h1("Forest Vision", style = "color: gold; background-color: #215c21; text-align: center; border-radius: 1em; padding: .5em; font-family: calibri, sans-serif; font-size: 2.8em;"),
-  fluidRow(
-           h2("Instructions"),
-           p("You can turn layers on or off using the pop-up box on the top right.
+  tabsetPanel(id = "tabs",
+    tabPanel("Home",
+             h1("Forest Vision", style = "color: gold; background-color: #215c21; text-align: center; padding: .5em; font-family: calibri, sans-serif; font-size: 2.8em;"),
+             br(),
+             fluidRow(
+               column(1
+                      ),
+               column(10,
+                      fluidRow(
+                        column(4,
+                               img(src = "OG1.webp", height = "200px")
+                        ),
+                        column(8,
+                               wellPanel(h2("About This Site"),
+                                         p(aboutTxt))
+                        )
+                      ),
+                      br(),
+                      fluidRow(
+                        column(7,
+                               wellPanel( h2("What is Old Growth?"),
+                                          p(whatisTxt), 
+                                          h3("Types of Old Growth"),
+                                          p(typesTxt))
+                        ),
+                        column(5,
+                               splitLayout(img(src = "bog_forest.webp",width = "200px"),
+                                           img(src = "SwanLake.webp",width = "200px")
+                                           ),
+                               br(),
+                               img(src = "giant_spruce.webp",width = "200px")
+                               
+                        )
+                      ),
+                      br(),
+                      fluidRow(
+                        column(4,
+                               img(src = "OG3.webp", height = "200px")
+                        ),
+                        column(8,
+                               wellPanel(
+                                 h2("BC Old Growth Status"),
+                                 p(statusTxt)
+                               )
+                        )
+                      ),
+                      br(),
+                      fluidRow(
+                        column(9,
+                               wellPanel(
+                                 h2("At Risk Old Growth"),
+                                 p(atriskTxt)
+                               )
+                        ),
+                        column(3,
+                               img(src = "OG4.webp", height = "200px")  
+                        )
+                      )
+                      ),
+               column(1)
+             )
+             
+             ),
+    tabPanel("At Risk Old Growth",
+             fluidRow(
+               h2("At Risk"),
+               p("This map shows different types of at risk old growth: productive, rare, and ancient. 
+               You can turn layers on or off using the pop-up box on the top right.
              There are various choices of base layers and overlay layers. To get 
              summarised deferral statistics by polygon, click on a polygon (productive, ancient, or rare). 
              To show summaries by BEC subzone/variant, select the BGC base layer, and click on the BGC unit."),
-           # checkboxGroupInput("seralClass",label = "Show seral stage:",
-           #                           choices = c(3,4),selected = 4,inline = T)
-           useShinyalert(),
-           leafletjs_defer,
-           leafletOutput("map", height = "80vh")
-      )
-  
+               # checkboxGroupInput("seralClass",label = "Show seral stage:",
+               #                           choices = c(3,4),selected = 4,inline = T)
+               useShinyalert(),
+               leafletjs_defer,
+               leafletOutput("map", height = "80vh")
+             )
+             ),
+    tabPanel("Resilience"),
+    tabPanel("About us")
+  )
+
 )
 
 # Define server logic required to draw a histogram

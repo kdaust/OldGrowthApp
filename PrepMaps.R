@@ -15,6 +15,36 @@ values(temp$alpha) <- 255
 temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
 writeRaster(temp,"cSI_RGBA.tif", overwrite = T)
 
+rast <- raster("./RasterData/Resilience_Maps/FocalMeanHumanInfluence.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c("#ffecb3","#ffe32b", "#b2f200", "#78a302","#058f00", "#035700", "#032401")
+temp <- RGB(rast,col = cols,breaks = c(0,25,50,65,75,85,98,101), 
+            alpha = T, overwrite = T)
+values(temp$alpha) <- 255
+temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
+writeRaster(temp,"Resilience_RGBA.tif", overwrite = T)
+
+rast <- raster("./RasterData/Resilience_Maps/FocalMeanPatch.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c("#ffecb3","#ffe32b", "#b2f200", "#78a302","#058f00", "#035700", "#032401")
+temp <- RGB(rast,col = cols,breaks = c(0,25,50,65,75,85,95,101), 
+            alpha = T, overwrite = T)
+values(temp$alpha) <- 255
+temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
+writeRaster(temp,"PatchSize_RGBA.tif", overwrite = T)
+
+rast <- raster("./RasterData/Resilience_Maps/FocalMeanAge.tif")
+NAvalue(rast) <- 0
+crs(rast) <- 3005
+cols <- c("#ffecb3","#ffe32b", "#b2f200", "#78a302","#058f00", "#035700", "#032401")
+temp <- RGB(rast,col = cols,breaks = c(0,15,40,60,75,85,95,101), 
+            alpha = T, overwrite = T)
+values(temp$alpha) <- 255
+temp$alpha[temp$red == 255 & temp$green == 255 & temp$blue == 255] <- 0
+writeRaster(temp,"Age_RGBA.tif", overwrite = T)
+
 rast <- raster("./RasterData/Disturbance.tif")
 NAvalue(rast) <- 0
 crs(rast) <- 3005
@@ -79,15 +109,16 @@ fwrite(dat2,"Ancient_MeanSite.csv")
 # st_crs(rst) <- 3005
 # r <- as(rst,"Raster")
 # writeRaster(r,"temp.tif",format = "GTiff", overwrite = T)
-
-rst <- read_stars("./RasterData/SeralClass_New.tif",proxy = F)
+library(stars)
+rst <- read_stars("./RasterData/Resilience_Maps/ResilienceNew.tif",proxy = F)
 rpoly <- st_as_sf(rst,merge = T,use_integer = T,na.rm = T)
 st_write(rpoly,"SeralClass.gpkg")
-colnames(rpoly)[1] <- "Seral"
+colnames(rpoly)[1] <- "Resilience"
 rpoly <- rpoly[rpoly$Seral %in% c(3,4),]
+rpoly <- st_read("Resilience.gpkg")
 library(rmapshaper)
-rp2 <- ms_simplify(rpoly,keep = 0.1, sys = T)
-st_write(rp2,dsn = "Seral34.gpkg")
+rp2 <- ms_simplify(rpoly,keep = 0.5, sys = T)
+st_write(rpoly,dsn = "Resilience.gpkg")
 
 vect <- st_read("./OG_ShapeFiles/Defer")
 vect$Area <- st_area(vect)
