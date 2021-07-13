@@ -23,11 +23,14 @@ cb_server <- "http://142.93.148.116/data/Cutblocks/{z}/{x}/{y}.pbf"
 cb_layer <- "Cutblocks"
 seral_server <- "http://142.93.148.116/data/Seral/{z}/{x}/{y}.pbf"
 seral_layer <- "Seral"
+resil_server <- "http://142.93.148.116/data/Resilience/{z}/{x}/{y}.pbf"
+resil_layer <- "Resilience"
 
 colProduct <- data.table(ID = c(1,2,3),Col = c("#d41919ff","#d44402ff","#d402d100"))
 colAncient <- data.table(ID = c(1,2),Col = c("#d61593","#d61593"))
 colRare <- data.table(ID = c(1,2),Col = c("#158cd6","#1d357d"))
 colCB <- data.table(ID = c(1,2,3),Col = c("#59341d","#a14c18","#e0996e"))
+colResil <- data.table(ID = c(1,2,3,4), Col = c("#eb6e65","#e02619","#78140d","#470500"))
 
 load("./InputDat/Defer_Info.Rdata")
 load("./InputDat/Ancient_Info.Rdata")
@@ -138,13 +141,20 @@ ui <- fluidPage(
                leafletOutput("map", height = "80vh")
              )
              ),
-    tabPanel("Resilience"),
+    tabPanel("Resilience",
+             fluidRow(
+               h2("Resilienct Forest"),
+               # checkboxGroupInput("seralClass",label = "Show seral stage:",
+               #                           choices = c(3,4),selected = 4,inline = T)
+               useShinyalert(),
+               leafletjs_defer,
+               leafletOutput("resil_map", height = "80vh")
+             )),
     tabPanel("About us")
   )
 
 )
 
-# Define server logic required to draw a histogram
 server <- function(input, output, session) {
     output$map <- renderLeaflet({
       leaflet() %>%
@@ -305,6 +315,40 @@ server <- function(input, output, session) {
                  )
                  
       )
+    })
+    
+    ##############resilience tab#########################
+    output$resil_map <- renderLeaflet({
+      leaflet() %>%
+        setView(lng = -122.77222, lat = 51.2665, zoom = 8) %>%
+        leaflet::addTiles(
+          urlTemplate = paste0("https://api.mapbox.com/styles/v1/", mbsty, "/tiles/{z}/{x}/{y}?access_token=", mbtk),
+          attribution = '&#169; <a href="https://www.mapbox.com/feedback/">Mapbox</a>',
+          group = "Hillshade",
+          options = leaflet::pathOptions(pane = "mapPane")) %>%
+        leaflet::addTiles(
+          urlTemplate = paste0("https://api.mapbox.com/styles/v1/", mblbsty, "/tiles/{z}/{x}/{y}?access_token=", mbtk),
+          attribution = '&#169; <a href="https://www.mapbox.com/feedback/">Mapbox</a>',
+          group = "Cities",
+          options = leaflet::pathOptions(pane = "overlayPane")) %>%
+        leaflet::addProviderTiles(leaflet::providers$Esri.WorldImagery, group = "Satellite",
+                                  options = leaflet::pathOptions(pane = "mapPane")) %>%
+        addPlugin() %>%
+        addBGCTiles() %>%
+        addTiles(urlTemplate = "http://142.93.148.116/data/HumanInfluence/{z}/{x}/{y}.png",
+                 group = "Human_Influence",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
+        addTiles(urlTemplate = "http://142.93.148.116/data/PatchSize/{z}/{x}/{y}.png",
+                 group = "Patch_Size",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
+        addTiles(urlTemplate = "http://142.93.148.116/data/AgeClass/{z}/{x}/{y}.png",
+                 group = "AgeClass",options = tileOptions(maxZoom = 15,maxNativeZoom = 12)) %>% 
+        invokeMethod(data = colResil, method = "addOGTiles", 
+                     ~ID, ~Col, resil_server, resil_layer,resil_layer, 1) %>%
+        leaflet::addLayersControl(
+          baseGroups = c("Hillshade","Satellite","BGCs"),
+          overlayGroups = c("Human_Influence","Patch_Size","AgeClass","Resilience"),
+          position = "topright") %>%
+        hideGroup(c("Human_Influence","Patch_Size","AgeClass"))
+      
     })
     
 }

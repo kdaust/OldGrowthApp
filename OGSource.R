@@ -58,8 +58,27 @@ jscode_defer <- paste0(
         vectorTileOptions(layName, layID, true,
                           "tilePane", subzoneColors, "ID", "ID")
       )
-      console.log(subzLayer);
       this.layerManager.addLayer(subzLayer, "tile", layID, layName);
+      
+      console.log(subzLayer);
+      var MyControl = L.Control.extend({
+        options: {
+          position: "topleft"
+        },
+      
+        onAdd: function(map) {
+          // create the control container with a particular class name
+          var container = L.DomUtil.create("div", "my-custom-control");
+          $(container).html(\'<div id="hoverhelp" title="so how">Image Hover Example Leaflet</div>\');
+      
+          L.DomEvent.disableClickPropagation(container);
+          return container;
+        }
+    });
+    
+    map.addControl(new MyControl());
+    
+    $("#hoverhelp").tooltip({ content: \'<img src="https://www.google.com/logos/doodles/2020/mascha-kalekos-113th-birthday-6753651837108682-s.png\'})
 
       subzLayer.on("click", function(e){
         Shiny.setInputValue("layer_click",layID);
